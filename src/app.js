@@ -35,7 +35,7 @@ server.use((req, res, next) => {
 server.use(
   cors({
     credentials: true,
-    origin: "https://tequiero.vercel.app/",
+    origin: "https://tequiero.vercel.app",
   })
 );
 
