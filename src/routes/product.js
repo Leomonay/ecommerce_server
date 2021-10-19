@@ -9,6 +9,7 @@ const {
   modifyProduct,
   deleteProduct,
 } = require("../controllers/product.controller");
+const isAdmin = require("../Middlewares/isAdmin")
 
 router.get("/", getProduct);
 router.post("/addProduct", addProduct);

@@ -16,7 +16,6 @@ const {
 const passport = require("passport");
 
 const login = async (req, res, next) => {
-  console.log(req.body)
   if (req.body.token) {
     const { token } = req.body;
     //console.log("I'm the freaking token", token);
@@ -41,7 +40,6 @@ const login = async (req, res, next) => {
         email: email,
       },
     });
-    console.log("soy el user en login", user)
     res.json({
       msg: "Successfully Authenticated",
       admin: user.dataValues.admin,
@@ -56,7 +54,6 @@ const login = async (req, res, next) => {
       else {
         req.login(user, (err) => {
           if (err) throw err;
-          //console.log("enviando", req.user.dataValues);
           res.status(200).json({
             msg: "Successfully Authenticated",
             admin: req.user.dataValues.admin,

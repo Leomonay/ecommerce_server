@@ -42,6 +42,8 @@ server.use(
 server.use(
   session({
     secret: "secret",
+    resave: false,
+    saveUninitialized: true
   })
 );
 

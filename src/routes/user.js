@@ -14,6 +14,7 @@ const {
     verify,
     twoFactorAuth,
 } = require("../controllers/user.controller");
+const isAdmin = require("../Middlewares/isAdmin")
 
 router.post("/addUser", addUser);
 router.get("/allUser", allUser);

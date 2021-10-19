@@ -5,7 +5,7 @@ module.exports = (req, res, next) => {
 	if(admin) {
 		next()
 	} else {
-		res.status(401).json({ msg: 'Invalid Token' });
+		res.status(401).json({ msg: 'No estas autorizado para ver esta página' });
 	}
 /* 	// Leer Token header
 	const token = req.header('x-auth-token'); // trae el token

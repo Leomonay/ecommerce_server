@@ -6,6 +6,7 @@ const qrcode = require("qrcode");
 
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
+const hbs = require('nodemailer-express-handlebars');
 const crypto = require("crypto");
 
 // Controller para agregar un usuario
@@ -151,26 +152,53 @@ const signup = async (req, res) => {
                 email_address: email,
                 status: "subscribed",
                 merge_fields: {
-                    FNAME: firstName,
-                    LNAME: lastName,
+                    FNAME: 'user',
+                    LNAME: 'userL',
                 },
             },
         ],
     };
 
     const postData = JSON.stringify(data);
-
     const options = {
-        url: "https://us1.api.mailchimp.com/3.0/lists/73e76446a9",
+        // url: "https://us1.api.mailchimp.com/3.0/lists/73e76446a9",
+        url: "https://us1.api.mailchimp.com/3.0/lists/79f8a44890",
         method: "POST",
         headers: {
-            Authorization: "auth 31855f14e575e98a6c2fd29c048d62ab-us1",
+            // Authorization: "auth 31855f14e575e98a6c2fd29c048d62ab-us1",
+            Authorization: "auth 63fe8adc93656da6f1ed8dd1d30be200-us1",
         },
         body: postData,
     };
     request(options, (err, response, body) => {
         if (response.statusCode === 200) {
             console.log("se agrego correctamente al newsletter");
+            var smtpTransport = nodemailer.createTransport({
+                service: "Gmail",
+                auth: {
+                    user: "tequieroecommerce@gmail.com",
+                    pass: "ecommerce123123",
+                },
+            });
+            var mailOptions = {
+                to: email,
+                from: "tequieroecommerce@gmail.com",
+                subject: "Confirmación de suscripción al newsletter",
+                html:
+                    `<h1>Hola!</h1>
+                    <h3>Confirmación de suscripción al newsletter</h3>
+                    `,
+            };
+            smtpTransport.sendMail(mailOptions, function (err) {
+                if (err) {
+                    console.log("Ocurrio un error", err);
+                } else {
+                    req.flash(
+                        "passwordReset",
+                        "Te has suscrito al newsletter."
+                    );
+                }
+            });
         } else {
             console.log("hubo un error", err);
         }
@@ -203,12 +231,10 @@ const forgot = async (req, res, next) => {
             from: "tequieroecommerce@gmail.com",
             subject: "Reseteo de contraseña",
             html:
-                `Entra en este link para cambiar la contraseña ` +
-                `http:/localhost:3000/password/` +
-                token +
-                "/" +
-                userData.id +
-                `<a href="http:/localhost:3000/password/${token}/${userData.id}">RECUPERAR CONTRASEÑA</a>`,
+                `<h1>Hola ${userData.name}!</h1>
+                <h3>Entra en este link para cambiar la contraseña:</h3>
+                <h3>http:/localhost:3000/password/${token}/${userData.id}</h3>`
+                ,
         };
         userData.resetPasswordExpires = Date.now() + 3600000;
         userData.resetPasswordToken = token;
@@ -254,7 +280,7 @@ const passwordReset = async (req, res) => {
             userData.resetPasswordExpires = Date.now();
             userData.password = bcrypt.hashSync(req.body.password, 10);
             await userData.save();
-            var smtpTransport = nodemailer.createTransport({
+            var confirmTransport = nodemailer.createTransport({
                 service: "Gmail",
                 auth: {
                     user: "tequieroecommerce@gmail.com",
@@ -265,13 +291,19 @@ const passwordReset = async (req, res) => {
                 to: userData.email,
                 from: "tequieroecommerce@gmail.com",
                 subject: "Tu contraseña ha sido cambiada correctamente",
-                text:
-                    "Hola,\n\n" +
-                    "este correo es para confirmar que la contraseña de " +
-                    userData.email +
-                    " ha sido cambiada correctamente.\n",
+                // text:
+                //     "Hola,\n\n" +
+                //     "este correo es para confirmar que la contraseña de " +
+                //     userData.email +
+                //     " ha sido cambiada correctamente.\n",
+                html:`
+                    <h1>Hola ${userData.name}!</h1>
+                    <h2>este correo es para confirmar que la contraseña de ${userData.email}</h2>
+                    <h2>fue cambiada correcatemente.</h2><br/>
+                    <p>Lamentamos las molestias causadas.</p>
+                `,
             };
-            smtpTransport.sendMail(mailOptions, function (err) {
+            confirmTransport.sendMail(mailOptions, function (err) {
                 if (err) {
                     console.log("ocurrio un error", err);
                 } else {
@@ -450,26 +482,34 @@ const modifyUser = async (req, res) => {
             const userData = await User.findOne({
                 where: { id: id },
             });
-            var smtpTransport = nodemailer.createTransport({
+            var smtpTransportReset = nodemailer.createTransport({
                 service: "Gmail",
                 auth: {
                     user: "tequieroecommerce@gmail.com",
                     pass: "ecommerce123123",
                 },
             });
+            smtpTransportReset.use('compile', hbs({
+                viewEngine: {
+                    partialsDir: './viewHtml/',
+                    defaultLayout: ''
+                },
+                viewPath: './viewHtml/',
+                extName: '.hbs'
+            }));
             var mailOptions = {
                 to: userData.email,
                 from: "tequieroecommerce@gmail.com",
                 subject: "Reseteo forzado de tú contraseña",
-                html: `
-                    <h1>Hola ${userData.name}!</h1><br/>
-                    <h2>Te informamos que por <strong>motivos de seguridad</strong> tuvimos que forzar el cambio de contraseña en tu cuenta.</h2>
-                    <h2>De modo que la proxima vez que inicies sesión deberas recuperar tu contraseña.</h2>
-                    <p>Lamentamos las molestias causadas.</p>
-                `,
+                // html:`
+                //     <h1>Hola ${userData.name}!</h1><br/>
+                //     <h2>Te informamos que por <strong>motivos de seguridad</strong> tuvimos que forzar el cambio de contraseña en tu cuenta.</h2>
+                //     <h2>De modo que la proxima vez que inicies sesión deberas recuperar tu contraseña.</h2>
+                //     <p>Lamentamos las molestias causadas.</p>
+                // `,
+                template: 'index'
             };
-
-            smtpTransport.sendMail(mailOptions, function (err) {
+            smtpTransportReset.sendMail(mailOptions, function (err) {
                 if (err) {
                     console.log("Ocurrio un error", err);
                 } else {

@@ -2,6 +2,7 @@ const { Router } = require("express");
 const router = Router();
 const { getOrders, addToOrder, deleteItem, getProductsByUserId, getUserCompleteOrdersRelatedProducts, clearCart, modifyOrder, checkoutOrder, getOrderById, getOrderByUserId } = require("../controllers/order.controller");
 
+
 router.get("/", getOrders); // recibe un query opcional con el status y solo devulve con este status o retorna todo si no le pasan nada
 router.get("/getUserOrders/:userId", getOrderByUserId)
 router.get("/getUserCompleteOrdersRelatedProducts/:userId", getUserCompleteOrdersRelatedProducts)
