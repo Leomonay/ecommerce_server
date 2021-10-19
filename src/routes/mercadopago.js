@@ -34,9 +34,9 @@ router.post("/create_preference", async (req, res, next) => {
       },
     ],
     back_urls: {
-      success: "http://localhost:3000/?status=approved",
-      failure: "http://localhost:3000/?status=rejected",
-      pending: "http://localhost:3000/?status=in_process",
+      success: "http://https://tequiero.vercel.app/?status=approved",
+      failure: "http://https://tequiero.vercel.app/?status=rejected",
+      pending: "http://https://tequiero.vercel.app/?status=in_process",
     },
     auto_return: "approved",
   };

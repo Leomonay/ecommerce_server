@@ -233,7 +233,7 @@ const forgot = async (req, res, next) => {
             html:
                 `<h1>Hola ${userData.name}!</h1>
                 <h3>Entra en este link para cambiar la contraseña:</h3>
-                <h3>http:/localhost:3000/password/${token}/${userData.id}</h3>`
+                <h3>http:/https://tequiero.vercel.app/password/${token}/${userData.id}</h3>`
                 ,
         };
         userData.resetPasswordExpires = Date.now() + 3600000;
